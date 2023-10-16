@@ -29,12 +29,6 @@ def get_answer_from_model(prompt, model_name="text-davinci-002"):
     return response.choices[0].text.strip()
 
 def perform_pypdf_ocr(pdf_file):
-    # pdf_text = ""
-    # pdf_reader = PdfReader(io.BytesIO(pdf_file))
-    # for page_num in range(len(pdf_reader.pages)):
-    #     page = pdf_reader.pages[page_num]
-    #     pdf_text += f"\nPage {page_num + 1}:\n" + page.extract_text()
-    # return pdf_text
     start_time = time.time()
     pdf_text = []
     pdf_reader = PdfReader(io.BytesIO(pdf_file))
@@ -58,13 +52,13 @@ def perform_pypdf_ocr(pdf_file):
         'processed_page_count': initial_page_count  # assuming all pages are processed
     }
 
-    summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
-    extracted_text += summary_str
+    #summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
+    #extracted_text += summary_str
 
     return extracted_text
 
 def perform_nougat_ocr(pdf_file):
-    nougat_url = "https://204f-34-134-11-109.ngrok.io/predict"  # Update as per your configuration
+    nougat_url = "https://b0ad-104-198-249-1.ngrok-free.app/predict"  # Update as per your configuration
 
     # Ensure the file object is in the correct format for requests (bytes).
     if not isinstance(pdf_file, bytes):
@@ -88,7 +82,7 @@ def perform_nougat_ocr(pdf_file):
     # Check for successful status code
     if response.status_code == 200:
         # Logic to extract page number information (adjust based on actual API response structure)
-        ocr_text =  response.text
+        ocr_text =  response.json()
         num_pages = ocr_text.count("Page:")  # Example logic, adjust as needed
         
         summary = {
@@ -98,8 +92,8 @@ def perform_nougat_ocr(pdf_file):
             "Chars Received": len(ocr_text),
         }
 
-        summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
-        ocr_text += summary_str
+        #summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
+        #ocr_text += summary_str
 
         return ocr_text  # Return the OCR text and the summary
         #return {"ocr_text": ocr_text, "summary": summary}
