@@ -28,7 +28,7 @@ def ocr_qa_section():
     input_option = st.selectbox("Select input method", input_methods, index=int(st.session_state.get('input_option_index', 0)))
     st.session_state['input_option_index'] = input_methods.index(input_option)
 
-    FASTAPI_ENDPOINT = "http://127.0.0.1:8504"
+    FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com/perform-ocr/"
 
     if input_option == "Upload a PDF file":
         uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
