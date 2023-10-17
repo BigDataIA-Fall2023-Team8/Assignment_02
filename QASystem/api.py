@@ -153,6 +153,10 @@ def handle_question(question: str = Form(...), context: str = Form(...)):
     answer = get_answer_from_model(prompt)
     return {"answer": answer}
 
+@app.get("/")
+def read_root():
+    return {"Hello": "FastAPI"}
+
 
 # def main():
 #     import uvicorn
