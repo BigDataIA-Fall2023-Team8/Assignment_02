@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import time
 
 st.title("PDF Analyzer: OCR and Q/A System")
 
@@ -37,7 +36,6 @@ def ocr_qa_section():
             st.session_state.uploaded_file_name = uploaded_file.name
         else:
             st.write(f"Previously uploaded file: {st.session_state.get('uploaded_file_name', 'None')}")
-
     else:
         url = st.text_input('Provide the PDF URL Link', value=st.session_state.get('url', ''))
         st.session_state.url = url
@@ -50,44 +48,36 @@ def ocr_qa_section():
 
     if st.button("Perform OCR") and (st.session_state.get('uploaded_file_name') or st.session_state.get('url')):
         with st.spinner('Performing OCR...'):
-            start_time = time.time()
-
             if st.session_state.get('uploaded_file_name'):
                 files = {"file": uploaded_file.getvalue()}
                 response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
             else:
                 response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
 
-            end_time = time.time()
             result = response.json()
 
             if result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
-                st.session_state.document_summary = {
-                    "Time Taken (seconds)": end_time - start_time,
-                    "Characters in PDF": len(result["ocr_output"]),
-                    "Characters After OCR": len(result["ocr_output"]),
-                    "Number of Pages": result.get("number_of_pages", "N/A")
-                }
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
+
+                # Question/Answer System
+                if 'question_prompt' not in st.session_state:
+                    st.session_state.question_prompt = ""
+
+                st.session_state.question_prompt = st.text_input('Question about the extracted text', st.session_state.question_prompt)
+
+                if st.button("Get Answer") and st.session_state.pdf_text and st.session_state.question_prompt:
+                    with st.spinner('Finding answer...'):
+                        response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/",
+                                                 data={"question": st.session_state.question_prompt, "context": st.session_state.pdf_text})
+                        answer_data = response.json()
+                        if "answer" in answer_data:
+                            st.write(f"Answer: {answer_data['answer']}")
+                        else:
+                            st.warning("Couldn't get an answer. Please try again.")
             else:
                 st.error(f"OCR Failed. Response: {result}")
-
-    if 'question_prompt' not in st.session_state:
-        st.session_state.question_prompt = ""
-
-    st.session_state.question_prompt = st.text_input('Question about the extracted text', st.session_state.question_prompt)
-
-    if st.button("Get Answer") and st.session_state.pdf_text and st.session_state.question_prompt:
-        with st.spinner('Finding answer...'):
-            response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/",
-                                     data={"question": st.session_state.question_prompt, "context": st.session_state.pdf_text})
-            answer_data = response.json()
-            if "answer" in answer_data:
-                st.write(f"Answer: {answer_data['answer']}")
-            else:
-                st.warning("Couldn't get an answer. Please try again.")
 
 def document_summary_section():
     st.header("Document Summary")
