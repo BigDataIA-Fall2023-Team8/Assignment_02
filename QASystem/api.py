@@ -154,10 +154,10 @@ def handle_question(question: str = Form(...), context: str = Form(...)):
     return {"answer": answer}
 
 
-def main():
-    import uvicorn
+# def main():
+#     import uvicorn
 
-    uvicorn.run("api:app", port=8504)
+#     uvicorn.run("api:app", port=8504)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()
