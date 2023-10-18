@@ -10,7 +10,12 @@ import uvicorn
 
 app = FastAPI()
 
-origins = ["http://localhost", "http://127.0.0.1", "http://localhost:8501"]
+origins = [
+    "http://localhost:8501",
+    "http://localhost",
+    "http://127.0.0.1"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

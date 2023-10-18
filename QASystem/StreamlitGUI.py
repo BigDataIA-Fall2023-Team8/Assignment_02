@@ -56,7 +56,7 @@ def ocr_qa_section():
 
             result = response.json()
 
-            if result["status"] == "success":
+            if "status" in result and result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
