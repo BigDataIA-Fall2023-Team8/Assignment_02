@@ -198,7 +198,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+openai.api_key = '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'
 
 chunks = []
 recent_conversation = []

@@ -128,7 +128,6 @@
 
 import streamlit as st
 import requests
-import pandas as pd
 
 st.title("PDF Analyzer: OCR and Q/A System")
 
@@ -142,9 +141,6 @@ if st.sidebar.button("Reset Session"):
         del st.session_state[key]
     st.experimental_rerun()
 
-def split_into_chunks(text, chunk_size=500):
-    return [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)]
-
 def home_section():
     st.header("Welcome to the PDF Analyzer App")
     st.write("Use this tool to extract text from PDFs and get answers from the extracted text. "
@@ -155,11 +151,10 @@ def ocr_qa_section():
 
     if 'pdf_text' not in st.session_state:
         st.session_state.pdf_text = ""
-        st.session_state.chunks = []
 
     input_methods = ["Upload a PDF file", "Provide a PDF URL Link"]
     input_option = st.selectbox("Select input method", input_methods, index=int(st.session_state.get('input_option_index', 0)))
-    st.session_state['input_option_index'] = input_methods.index(input_option)
+    st.session_state.input_option_index = input_methods.index(input_option)
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
@@ -176,43 +171,41 @@ def ocr_qa_section():
         st.session_state.url = url
 
     ocr_methods = ["Nougat", "PyPDF"]
-    option = st.selectbox("Select OCR method", ocr_methods, index=st.session_state.option_index)
+    option = st.selectbox("Select OCR method", ocr_methods, index=int(st.session_state.get('option_index', 0)))
     st.session_state.option_index = ocr_methods.index(option)
 
     if st.button("Perform OCR") and (uploaded_file or st.session_state.url):
         with st.spinner('Performing OCR...'):
             if uploaded_file:
-                uploaded_file_value = uploaded_file.getvalue()
-                if uploaded_file_value:
-                    files = {"file": uploaded_file_value}
-                    response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
+                files = {"file": uploaded_file.getvalue()}
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
             else:
-                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": st.session_state.url, "ocr_method": option})
-
+                data = {"url": st.session_state.url, "ocr_method": option}
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data=data)
+            
             result = response.json()
 
             if "status" in result and result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
-                st.session_state.chunks = split_into_chunks(st.session_state.pdf_text)
-
-                # Displaying OCR Output
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
 
-                # Question/Answer System
-                question_prompt = st.text_input('Question about the extracted text')
-                if st.button("Get Answer") and question_prompt:
-                    with st.spinner('Finding answer...'):
-                        context_to_send = "\n".join(st.session_state.chunks[-4:])  # Sending the last 4 chunks for context
-                        response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/",
-                                                 data={"question": question_prompt, "context": context_to_send})
-                        answer_data = response.json()
-                        if "answer" in answer_data:
-                            st.write(f"Answer: {answer_data['answer']}")
-                        else:
-                            st.warning("Couldn't get an answer. Please try again.")
-            else:
-                st.error(f"OCR Failed. Response: {result}")
+    # Question/Answer System
+    st.session_state.question_prompt = st.text_input('Question about the extracted text', st.session_state.get('question_prompt', ''))
+
+    if st.button("Get Answer", key="get_answer_button") and st.session_state.get('pdf_text', '') and st.session_state.question_prompt:
+        with st.spinner('Finding answer...'):
+            data = {"question": st.session_state.question_prompt}
+            response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
+            answer_data = response.text
+
+            if "answer" in answer_data and answer_data["answer"] != "no answer":
+                st.session_state.answer_received = True
+                st.session_state.answer = answer_data['answer']
+
+    if st.session_state.get('answer_received', False):
+        st.write(f"Answer: {st.session_state.answer}")
+
 
 def document_summary_section():
     st.header("Document Summary")
@@ -242,4 +235,3 @@ sections = {
 
 # Running the appropriate section
 sections[choice]()
-
