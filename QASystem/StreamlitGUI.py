@@ -28,7 +28,7 @@ def ocr_qa_section():
     input_option = st.selectbox("Select input method", input_methods, index=int(st.session_state.get('input_option_index', 0)))
     st.session_state['input_option_index'] = input_methods.index(input_option)
 
-    FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com/perform-ocr/"
+    FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
     if input_option == "Upload a PDF file":
         uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
@@ -58,6 +58,11 @@ def ocr_qa_section():
 
             if "status" in result and result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
+                st.session_state.time_taken = result["summary"].get("time_taken_s", "N/A")
+                st.session_state.characters_sent = result["summary"].get("input_length", "N/A")
+                st.session_state.characters_received = result["summary"].get("output_length", "N/A")
+                # Assuming number_of_pages needs to be added to the backend's response, you might want to adjust this accordingly
+                st.session_state.number_of_pages = result["summary"].get("number_of_pages", "N/A")
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
 
@@ -81,10 +86,11 @@ def ocr_qa_section():
 
 def document_summary_section():
     st.header("Document Summary")
-    if 'document_summary' in st.session_state:
-        summary = st.session_state.document_summary
-        table_data = list(summary.items())
-        st.table(table_data)
+    if 'time_taken' in st.session_state:
+        st.write(f"Time taken for OCR: {st.session_state.time_taken}")
+        st.write(f"Characters sent for OCR: {st.session_state.characters_sent}")
+        st.write(f"Characters received after OCR: {st.session_state.characters_received}")
+        st.write(f"Number of pages obtained: {st.session_state.number_of_pages}")
     else:
         st.write("Summary of the last document processed will appear here.")
 
@@ -102,3 +108,4 @@ sections = {
 
 # Running the appropriate section
 sections[choice]()
+
