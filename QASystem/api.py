@@ -304,3 +304,7 @@ def handle_question(question: str = Form(...)):
     if len(recent_conversation) > MAX_CHUNKS_FOR_QUERY:
         recent_conversation.pop(0)
     return {"answer": answer}
+
+@app.get("/")
+def read_root():
+    return {"Hello": "FastAPI"}
