@@ -64,14 +64,14 @@ async def load_model(
         model.eval()
 
 
-@app.get("/")
-def root():
-    """Health check."""
-    response = {
-        "status-code": HTTPStatus.OK,
-        "data": {},
-    }
-    return response
+# @app.get("/")
+# def root():
+#     """Health check."""
+#     response = {
+#         "status-code": HTTPStatus.OK,
+#         "data": {},
+#     }
+#     return response
 
 
 @app.post("/predict/")
@@ -91,15 +91,30 @@ async def predict(
     """
     pdfbin = file.file.read()
     pdf = pypdfium2.PdfDocument(pdfbin)
+    md5 = hashlib.md5(pdfbin).hexdigest()
+    save_path = SAVE_DIR / md5
 
     if start is not None and stop is not None:
         pages = list(range(start - 1, stop))
     else:
         pages = list(range(len(pdf)))
-
-    # We will keep predictions in memory and not store them to file
     predictions = [""] * len(pages)
-    images = rasterize_paper(pdf, pages=pages)
+    dellist = []
+    if save_path.exists():
+        for computed in (save_path / "pages").glob("*.mmd"):
+            try:
+                idx = int(computed.stem) - 1
+                if idx in pages:
+                    i = pages.index(idx)
+                    print("skip page", idx + 1)
+                    predictions[i] = computed.read_text(encoding="utf-8")
+                    dellist.append(idx)
+            except Exception as e:
+                print(e)
+    compute_pages = pages.copy()
+    for el in dellist:
+        compute_pages.remove(el)
+    images = rasterize_paper(pdf, pages=compute_pages)
     global model
 
     dataset = ImageDataset(
@@ -134,15 +149,27 @@ async def predict(
             else:
                 disclaimer = ""
 
-            predictions[pages.index(pages[idx * BATCHSIZE + j])] = (
+            predictions[pages.index(compute_pages[idx * BATCHSIZE + j])] = (
                 markdown_compatible(output) + disclaimer
             )
 
-    # Joining predictions and returning directly
+    (save_path / "pages").mkdir(parents=True, exist_ok=True)
+    pdf.save(save_path / "doc.pdf")
+    if len(images) > 0:
+        thumb = Image.open(images[0])
+        thumb.thumbnail((400, 400))
+        thumb.save(save_path / "thumb.jpg")
+    for idx, page_num in enumerate(pages):
+        (save_path / "pages" / ("%02d.mmd" % (page_num + 1))).write_text(
+            predictions[idx], encoding="utf-8"
+        )
     final = "".join(predictions).strip()
+    (save_path / "doc.mmd").write_text(final, encoding="utf-8")
     return final
 
-
+@app.get("/")
+def read_root():
+    return {"Hello": "FastAPI"}
 
 # def main():
 #     import uvicorn
