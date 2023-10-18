@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import pandas as pd
 
 st.title("PDF Analyzer: OCR and Q/A System")
 
@@ -30,6 +31,8 @@ def ocr_qa_section():
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
+    uploaded_file = None  # Initialize uploaded_file as None
+
     if input_option == "Upload a PDF file":
         uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
         if uploaded_file:
@@ -46,13 +49,22 @@ def ocr_qa_section():
     option = st.selectbox("Select OCR method", ocr_methods, index=st.session_state.option_index)
     st.session_state.option_index = ocr_methods.index(option)
 
-    if st.button("Perform OCR") and (st.session_state.get('uploaded_file_name') or st.session_state.get('url')):
+    if st.button("Perform OCR") and (uploaded_file or st.session_state.url):
         with st.spinner('Performing OCR...'):
-            if st.session_state.get('uploaded_file_name'):
-                files = {"file": uploaded_file.getvalue()}
-                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
+            if uploaded_file:
+                uploaded_file_value = uploaded_file.getvalue()
+                if uploaded_file_value:
+                    files = {"file": uploaded_file_value}
+                    response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
+                else:
+                    st.warning("Please upload a PDF file.")
+                    return
             else:
-                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
+                if url:
+                    response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
+                else:
+                    st.warning("Please provide a PDF URL Link.")
+                    return
 
             result = response.json()
 
@@ -84,13 +96,18 @@ def ocr_qa_section():
             else:
                 st.error(f"OCR Failed. Response: {result}")
 
+
 def document_summary_section():
     st.header("Document Summary")
+    
     if 'time_taken' in st.session_state:
-        st.write(f"Time taken for OCR: {st.session_state.time_taken}")
-        st.write(f"Characters sent for OCR: {st.session_state.characters_sent}")
-        st.write(f"Characters received after OCR: {st.session_state.characters_received}")
-        st.write(f"Number of pages obtained: {st.session_state.number_of_pages}")
+        summary_data = {
+            "Metric": ["Time taken for OCR", "Characters sent for OCR", "Characters received after OCR", "Number of pages obtained"],
+            "Value": [st.session_state.time_taken, st.session_state.characters_sent, st.session_state.characters_received, st.session_state.number_of_pages]
+        }
+        
+        summary_df = pd.DataFrame(summary_data)
+        st.dataframe(summary_df.style.set_properties(**{'text-align': 'left'}))
     else:
         st.write("Summary of the last document processed will appear here.")
 
