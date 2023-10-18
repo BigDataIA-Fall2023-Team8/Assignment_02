@@ -167,9 +167,6 @@ async def predict(
     (save_path / "doc.mmd").write_text(final, encoding="utf-8")
     return final
 
-@app.get("/")
-def read_root():
-    return {"Hello": "NougatAPI"}
 
 # def main():
 #     import uvicorn
