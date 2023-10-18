@@ -6,10 +6,16 @@ from PyPDF2 import PdfReader
 import openai
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+import uvicorn
 
 app = FastAPI()
 
-origins = ["http://localhost", "http://127.0.0.1"]
+origins = [
+    "http://localhost:8501",
+    "http://localhost",
+    "http://127.0.0.1"
+]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -152,11 +158,15 @@ def handle_question(question: str = Form(...), context: str = Form(...)):
     answer = get_answer_from_model(prompt)
     return {"answer": answer}
 
+@app.get("/")
+def read_root():
+    return {"Hello": "FastAPI"}
 
-def main():
-    import uvicorn
 
-    uvicorn.run("api:app", port=8504)
+# def main():
+#     import uvicorn
 
-if __name__ == "__main__":
-    main()
+#     uvicorn.run("api:app", port=8504)
+
+# if __name__ == "__main__":
+#     main()
