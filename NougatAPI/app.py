@@ -174,8 +174,10 @@ def read_root():
 # def main():
 #     import uvicorn
 
-#     uvicorn.run("app:app", port=8503)
+#     uvicorn.run("app:app", port=8000)
 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    #main()
+    port = int(os.environ.get("PORT", 8000))  # Default port is 8000 if not specified
+    uvicorn.run("app:app", host="0.0.0.0", port=port, log_level="info")
