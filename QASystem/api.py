@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = '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'  # Replace with your OpenAI API key.
+openai.api_key = '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'  # Replace with your OpenAI API key.
 
 
 def get_answer_from_model(prompt, model_name="gpt-3.5-turbo"):
