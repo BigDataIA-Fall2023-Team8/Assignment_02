@@ -65,9 +65,9 @@ def perform_pypdf_ocr(pdf_file):
 
     return extracted_text
 
-def perform_nougat_ocr(pdf_file, nougat_url):
+def perform_nougat_ocr(pdf_file, ngrok):
     
-    ngrok = "nougat_url/predict/"
+    nougat_url = f"{ngrok}/predict/"
 
     # Ensure the file object is in the correct format for requests (bytes).
     if not isinstance(pdf_file, bytes):
@@ -79,7 +79,7 @@ def perform_nougat_ocr(pdf_file, nougat_url):
     
     try:
         # Send the request to the Nougat OCR API
-        response = requests.post(ngrok, files=files)
+        response = requests.post(nougat_url, files=files)
     except requests.RequestException as e:
         print(f"Request failed: {e}")
         return None, {"error": str(e), "duration": 0, "num_pages": 0}
@@ -106,7 +106,7 @@ def perform_nougat_ocr(pdf_file, nougat_url):
         return None, {"error": response.text, "duration": duration, "num_pages": 0}
 
 @app.post("/perform-ocr/")
-async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...), file: UploadFile = File(None), nougat_url: str = Form(None)):
+async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...), file: UploadFile = File(None), ngrok: str = Form(None)):
     try:
         logging.info(f"Received OCR request: url={url}, ocr_method={ocr_method}, file={file}")
 
@@ -127,10 +127,10 @@ async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...),
         if ocr_method == "PyPDF":
                 pdf_text = perform_pypdf_ocr(pdf_content)
         elif ocr_method == "Nougat":
-            if nougat_url:
-                pdf_text = perform_nougat_ocr(io.BytesIO(pdf_content), nougat_url)
+            if ngrok != "":
+                pdf_text = perform_nougat_ocr(io.BytesIO(pdf_content), ngrok)
             else:
-                return {"status": "error", "message": "Nougat URL is required for Nougat OCR"}
+                return {"status": "error", "message": "NGrok URL is required for Nougat OCR"}
         else:
             return {"status": "error", "message": "Invalid OCR method"}
 
