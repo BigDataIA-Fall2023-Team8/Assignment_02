@@ -2,11 +2,18 @@ import streamlit as st
 import requests
 import pandas as pd
 
+# Initialize session state variables if they don't exist
+if 'pdf_text' not in st.session_state:
+    st.session_state.pdf_text = ""
+
+if 'conversation' not in st.session_state:
+    st.session_state.conversation = []
+
 st.title("PDF Analyzer: OCR and Q/A System")
 
 # Sidebar
 st.sidebar.title("Navigation")
-menu = ["Home", "OCR and Q/A System", "Document Summary", "About"]
+menu = ["Home", "Perform OCR", "Q/A System", "Document Summary", "About"]
 choice = st.sidebar.selectbox("Choose a section", menu)
 
 if st.sidebar.button("Reset Session"):
@@ -16,99 +23,74 @@ if st.sidebar.button("Reset Session"):
 
 def home_section():
     st.header("Welcome to the PDF Analyzer App")
-    st.write("Use this tool to extract text from PDFs and get answers from the extracted text. "
-             "Navigate through the sidebar to access different functionalities.")
+    st.write("Use this tool to extract text from PDFs and get answers from the extracted text. Navigate through the sidebar to access different functionalities.")
 
-def ocr_qa_section():
-    st.header("OCR and Question/Answer System")
-
-    if 'pdf_text' not in st.session_state:
-        st.session_state.pdf_text = ""
-
-    input_methods = ["Upload a PDF file", "Provide a PDF URL Link"]
-    input_option = st.selectbox("Select input method", input_methods, index=int(st.session_state.get('input_option_index', 0)))
-    st.session_state['input_option_index'] = input_methods.index(input_option)
+def perform_ocr_section():
+    st.header("Perform OCR")
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
-    uploaded_file = None  # Initialize uploaded_file as None
-
-    if input_option == "Upload a PDF file":
-        uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
-        if uploaded_file:
-            st.session_state.uploaded_file_name = uploaded_file.name
-        else:
-            st.write(f"Previously uploaded file: {st.session_state.get('uploaded_file_name', 'None')}")
-    else:
-        url = st.text_input('Provide the PDF URL Link', value=st.session_state.get('url', ''))
-        st.session_state.url = url
+    input_methods = ["Upload a PDF file", "Provide a PDF URL Link"]
+    input_option = st.selectbox("Select input method", input_methods)
 
     ocr_methods = ["Nougat", "PyPDF"]
-    if 'option_index' not in st.session_state:
-        st.session_state.option_index = 0
-    option = st.selectbox("Select OCR method", ocr_methods, index=st.session_state.option_index)
-    st.session_state.option_index = ocr_methods.index(option)
+    option = st.selectbox("Select OCR method", ocr_methods)
 
-    if st.button("Perform OCR") and (uploaded_file or st.session_state.url):
+    uploaded_file = None
+    url = None
+    if input_option == "Upload a PDF file":
+        uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+    else:
+        url = st.text_input('Provide the PDF URL Link')
+
+    if st.button("Perform OCR"):
         with st.spinner('Performing OCR...'):
             if uploaded_file:
-                uploaded_file_value = uploaded_file.getvalue()
-                if uploaded_file_value:
-                    files = {"file": uploaded_file_value}
-                    response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
-                else:
-                    st.warning("Please upload a PDF file.")
-                    return
+                files = {"file": uploaded_file.getvalue()}
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
             else:
-                if url:
-                    response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
-                else:
-                    st.warning("Please provide a PDF URL Link.")
-                    return
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
 
             result = response.json()
-
             if "status" in result and result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
-                st.session_state.time_taken = result["summary"].get("time_taken_s", "N/A")
-                st.session_state.characters_sent = result["summary"].get("input_length", "N/A")
-                st.session_state.characters_received = result["summary"].get("output_length", "N/A")
-                # Assuming number_of_pages needs to be added to the backend's response, you might want to adjust this accordingly
-                st.session_state.number_of_pages = result["summary"].get("number_of_pages", "N/A")
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
 
-                # Question/Answer System
-                if 'question_prompt' not in st.session_state:
-                    st.session_state.question_prompt = ""
+def qa_section():
+    st.header("Question/Answer System")
 
-                st.session_state.question_prompt = st.text_input('Question about the extracted text', st.session_state.question_prompt)
+    # If no text has been extracted, inform the user
+    if not st.session_state.pdf_text:
+        st.write("Please perform OCR on a PDF first to extract text.")
+        return
 
-                # if st.button("Get Answer") and st.session_state.pdf_text and st.session_state.question_prompt:
-                #     with st.spinner('Finding answer...'):
-                #         response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/",
-                #                                  data={"question": st.session_state.question_prompt, "context": st.session_state.pdf_text})
-                #         answer_data = response.json()
-                #         if "answer" in answer_data:
-                #             st.write(f"Answer: {answer_data['answer']}")
-                #         else:
-                #             st.warning("Couldn't get an answer. Please try again.")
-                #     Question/Answer System
-                if st.button("Get Answer", key="get_answer_button") and st.session_state.get('pdf_text', '') and st.session_state.question_prompt:
-                    with st.spinner('Finding answer...'):
-                        data = {"question": st.session_state.question_prompt}
-                        response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
-                        answer_data = response.json()
+    # Display previous conversation
+    for item in st.session_state.conversation:
+        if item["role"] == "user":
+            st.write(f"You: {item['content']}")
+        else:
+            st.write(f"AI: {item['content']}")
 
-                        if "answer" in answer_data and answer_data["answer"] != "no answer":
-                            st.session_state.answer_received = True
-                            st.session_state.answer = answer_data['answer']
+    FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
+    question = st.text_input('Enter your question:')
+    if st.button("Get Answer"):
+        st.session_state.conversation.append({"role": "user", "content": question})
 
-                if st.session_state.get('answer_received', False):
-                    st.write(f"Answer: {st.session_state.answer}")
-            else:
-                st.error(f"OCR Failed. Response: {result}")
+        with st.spinner('Finding answer...'):
+            data = {
+                "question": question,
+                "context": st.session_state.pdf_text
+            }
+            response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
+            answer_data = response.json()
 
+            if "answer" in answer_data:
+                answer = answer_data['answer']
+                st.session_state.conversation.append({"role": "ai", "content": answer})
+
+            # Refresh the page to clear the input box and show the updated conversation
+            st.experimental_rerun()
 
 def document_summary_section():
     st.header("Document Summary")
@@ -131,11 +113,11 @@ def about_section():
 # Mapping sections to functions
 sections = {
     "Home": home_section,
-    "OCR and Q/A System": ocr_qa_section,
+    "Perform OCR": perform_ocr_section,
+    "Q/A System": qa_section,
     "Document Summary": document_summary_section,
     "About": about_section
 }
 
 # Running the appropriate section
 sections[choice]()
-
