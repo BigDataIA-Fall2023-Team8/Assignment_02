@@ -31,14 +31,11 @@ def get_answer_from_model(prompt, model_name="gpt-3.5-turbo"):
     
     # Using the chat model endpoint for GPT-3.5-turbo
     response = openai.ChatCompletion.create(
-        model=model_name,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt}
-        ],
-        max_tokens=150
-    )
-    return response.choices[0].message['content'].strip()
+        engine=model_name,
+            prompt=prompt,
+            max_tokens=150
+        )
+    return response.choices[0].text.strip()
 
 def perform_pypdf_ocr(pdf_file):
     start_time = time.time()
