@@ -30,14 +30,21 @@ def perform_ocr_section():
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
-    input_methods = [ "Provide a PDF URL Link", "Upload a PDF file"]
+    input_methods = ["Provide a PDF URL Link", "Upload a PDF file"]
     input_option = st.selectbox("Select input method", input_methods)
 
     ocr_methods = ["PyPDF", "Nougat"]
     option = st.selectbox("Select OCR method", ocr_methods)
-   
+
     uploaded_file = None
     url = None
+    ngrok = None  # Initialized here
+
+    # To display instructions and take the auth_token from the user if Nougat is chosen
+    if option == "Nougat":
+        st.write("Please visit the following Google Colab Notebook and follow the instructions to generate the NGrok Link:")
+        st.write("[Google Colab Notebook](https://colab.research.google.com/drive/1nIeJH-1fu20UUVXD_YvcyQG30NQ98u-b#scrollTo=iBWwqRnEbpUE)")  # Provide your Google Colab link here
+        ngrok = st.text_input("Enter the generated NGrok Link here:")
     
     if input_option == "Upload a PDF file":
         uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
@@ -46,11 +53,16 @@ def perform_ocr_section():
 
     if st.button("Perform OCR"):
         with st.spinner('Performing OCR...'):
+            data = {
+                "ocr_method": option,
+                "ngrok": ngrok  # Include the link in the request data
+            }
             if uploaded_file:
                 files = {"file": uploaded_file.getvalue()}
-                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data={"ocr_method": option})
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", files=files, data=data)
             else:
-                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
+                data["url"] = url
+                response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data=data)
 
             result = response.json()
 
@@ -101,7 +113,7 @@ def qa_section():
                     "context": st.session_state.pdf_text
                 }
                 response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
-                answer_data = response.text
+                answer_data = response.json()
 
                 if "answer" in answer_data:
                     answer = answer_data['answer']
@@ -115,10 +127,6 @@ def qa_section():
 
             # Refresh the page to reflect the changes
             st.experimental_rerun()
-
-
-
-
 
 def document_summary_section():
     st.header("Document Summary")
