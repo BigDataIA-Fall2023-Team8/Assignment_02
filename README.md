@@ -11,7 +11,7 @@ Steps on how to run the demo:
 * This will set up the initial requirements
 Link to the app:
 -----------------
-Add the link
+* Add the link
 Project Flow
 -----------------
 ### User Interface
