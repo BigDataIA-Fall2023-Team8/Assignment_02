@@ -24,7 +24,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = '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'  # Replace with your OpenAI API key.
+openai.api_key = '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'  # Replace with your OpenAI API key.
 
 def get_answer_from_model(prompt, model_name="text-davinci-002"):
     response = openai.Completion.create(
