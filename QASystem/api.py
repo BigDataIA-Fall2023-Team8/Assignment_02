@@ -30,7 +30,7 @@ openai.api_key = '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'  # Replac
 def get_answer_from_model(prompt, model_name="gpt-3.5-turbo"):
     
     # Using the chat model endpoint for GPT-3.5-turbo
-    response = openai.Completion.create(
+    response = openai.ChatCompletion.create(
         engine=model_name,
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
