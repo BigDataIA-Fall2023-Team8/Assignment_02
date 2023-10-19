@@ -30,14 +30,15 @@ def perform_ocr_section():
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
 
-    input_methods = ["Upload a PDF file", "Provide a PDF URL Link"]
+    input_methods = [ "Provide a PDF URL Link", "Upload a PDF file"]
     input_option = st.selectbox("Select input method", input_methods)
 
-    ocr_methods = ["Nougat", "PyPDF"]
+    ocr_methods = ["PyPDF", "Nougat"]
     option = st.selectbox("Select OCR method", ocr_methods)
-
+   
     uploaded_file = None
     url = None
+    
     if input_option == "Upload a PDF file":
         uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
     else:
@@ -81,9 +82,11 @@ def qa_section():
             st.write(f"AI: {item['content']}")
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
-
+            
     # Start the form
+    
     with st.form(key='qa_form',clear_on_submit=True):
+
         # If 'question' is not in session_state, initialize it
         if 'question' not in st.session_state:
             st.session_state.question = ""
@@ -107,11 +110,8 @@ def qa_section():
                     answer = answer_data['answer']
                     st.session_state.conversation.append({"role": "ai", "content": answer})
 
-            # Clear the question in session_state to reset the text box
-            st.session_state.question = ""
-
             # Refresh the page to reflect the changes
-            st.experimental_rerun()
+                st.experimental_rerun()
 
 
 
