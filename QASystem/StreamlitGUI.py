@@ -52,10 +52,18 @@ def perform_ocr_section():
                 response = requests.post(f"{FASTAPI_ENDPOINT}/perform-ocr/", data={"url": url, "ocr_method": option})
 
             result = response.json()
+
             if "status" in result and result["status"] == "success":
                 st.session_state.pdf_text = result["ocr_output"]
                 st.write("OCR Output:")
                 st.write(st.session_state.pdf_text)
+
+                # Storing the summary data in st.session_state
+                st.session_state.time_taken = result["summary"]["time_taken_s"]
+                st.session_state.characters_sent = result["summary"]["input_length"]
+                st.session_state.characters_received = result["summary"]["output_length"]
+                # NOTE: Your backend doesn't seem to be returning a 'number_of_pages' key
+                st.session_state.number_of_pages = result["summary"]["number_of_pages"]  # Assuming you'll add this in the backend
 
 def qa_section():
     st.header("Question/Answer System")
@@ -94,15 +102,31 @@ def qa_section():
 
 def document_summary_section():
     st.header("Document Summary")
-    
+
     if 'time_taken' in st.session_state:
         summary_data = {
-            "Metric": ["Time taken for OCR", "Characters sent for OCR", "Characters received after OCR", "Number of pages obtained"],
-            "Value": [st.session_state.time_taken, st.session_state.characters_sent, st.session_state.characters_received, st.session_state.number_of_pages]
+            "Metrics": [
+                "Time taken for OCR (sec.)",
+                "Characters sent for OCR",
+                "Characters received after OCR",
+                "Number of pages obtained"  # Uncomment if you add this in the backend
+            ],
+            "Values": [
+                st.session_state.time_taken,
+                st.session_state.characters_sent,
+                st.session_state.characters_received,
+                st.session_state.number_of_pages  # Uncomment if you add this in the backend
+            ]
         }
-        
+
         summary_df = pd.DataFrame(summary_data)
-        st.dataframe(summary_df.style.set_properties(**{'text-align': 'left'}))
+
+        # Use st.table() for better table formatting
+        st.table(summary_df.set_index('Metrics'))
+
+        # Optionally, add some additional descriptive text if necessary
+        st.write("Note: Metrics and values are based on the most recent OCR operation.")
+
     else:
         st.write("Summary of the last document processed will appear here.")
 
