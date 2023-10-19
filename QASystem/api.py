@@ -28,12 +28,17 @@ openai.api_key = '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'  # Replac
 
 
 def get_answer_from_model(prompt, model_name="gpt-3.5-turbo"):
-    response = openai.Completion.create(
-        engine=model_name,
-        prompt=prompt,
+    
+    # Using the chat model endpoint for GPT-3.5-turbo
+    response = openai.ChatCompletion.create(
+        model=model_name,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
         max_tokens=150
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content'].strip()
 
 def perform_pypdf_ocr(pdf_file):
     start_time = time.time()
