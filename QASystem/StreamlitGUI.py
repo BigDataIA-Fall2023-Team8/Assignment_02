@@ -63,42 +63,58 @@ def perform_ocr_section():
                 st.session_state.characters_sent = result["summary"]["input_length"]
                 st.session_state.characters_received = result["summary"]["output_length"]
                 # NOTE: Your backend doesn't seem to be returning a 'number_of_pages' key
-                st.session_state.number_of_pages = result["summary"]["number_of_pages"]  # Assuming you'll add this in the backend
+                #st.session_state.number_of_pages = result["summary"]["number_of_pages"]  # Assuming you'll add this in the backend
 
 def qa_section():
     st.header("Question/Answer System")
 
     # If no text has been extracted, inform the user
-    if not st.session_state.pdf_text:
+    if not st.session_state.get('pdf_text'):
         st.write("Please perform OCR on a PDF first to extract text.")
         return
 
     # Display previous conversation
-    for item in st.session_state.conversation:
+    for item in st.session_state.get('conversation', []):
         if item["role"] == "user":
             st.write(f"You: {item['content']}")
         else:
             st.write(f"AI: {item['content']}")
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
-    question = st.text_input('Enter your question:')
-    if st.button("Get Answer"):
-        st.session_state.conversation.append({"role": "user", "content": question})
 
-        with st.spinner('Finding answer...'):
-            data = {
-                "question": question,
-                "context": st.session_state.pdf_text
-            }
-            response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
-            answer_data = response.json()
+    # Start the form
+    with st.form(key='qa_form',clear_on_submit=True):
+        # If 'question' is not in session_state, initialize it
+        if 'question' not in st.session_state:
+            st.session_state.question = ""
 
-            if "answer" in answer_data:
-                answer = answer_data['answer']
-                st.session_state.conversation.append({"role": "ai", "content": answer})
+        # Use st.session_state.question for the text_input
+        st.session_state.question = st.text_input('Enter your question:', value=st.session_state.question)
 
-            # Refresh the page to clear the input box and show the updated conversation
+        # Submit button for the form
+        if st.form_submit_button("Get Answer"):
+            st.session_state.conversation.append({"role": "user", "content": st.session_state.question})
+
+            with st.spinner('Finding answer...'):
+                data = {
+                    "question": st.session_state.question,
+                    "context": st.session_state.pdf_text
+                }
+                response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
+                answer_data = response.json()
+
+                if "answer" in answer_data:
+                    answer = answer_data['answer']
+                    st.session_state.conversation.append({"role": "ai", "content": answer})
+
+            # Clear the question in session_state to reset the text box
+            st.session_state.question = ""
+
+            # Refresh the page to reflect the changes
             st.experimental_rerun()
+
+
+
 
 def document_summary_section():
     st.header("Document Summary")
@@ -109,13 +125,13 @@ def document_summary_section():
                 "Time taken for OCR (sec.)",
                 "Characters sent for OCR",
                 "Characters received after OCR",
-                "Number of pages obtained"  # Uncomment if you add this in the backend
+                #"Number of pages obtained"  # Uncomment if you add this in the backend
             ],
             "Values": [
                 st.session_state.time_taken,
                 st.session_state.characters_sent,
                 st.session_state.characters_received,
-                st.session_state.number_of_pages  # Uncomment if you add this in the backend
+                #st.session_state.number_of_pages  # Uncomment if you add this in the backend
             ]
         }
 
