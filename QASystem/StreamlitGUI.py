@@ -77,41 +77,45 @@ def qa_section():
     # Display previous conversation
     for item in st.session_state.get('conversation', []):
         if item["role"] == "user":
-            st.write(f"You: {item['content']}")
+            st.markdown(f"<span style='color: red'>Question:</span> {item['content']}", unsafe_allow_html=True)
         else:
-            st.write(f"AI: {item['content']}")
+            st.markdown(f"<span style='color: green'>Answer:</span> {item['content']}", unsafe_allow_html=True)
+
 
     FASTAPI_ENDPOINT = "https://fastapi-assignment2-4fb0a78ad873.herokuapp.com"
             
     # Start the form
-    
-    with st.form(key='qa_form',clear_on_submit=True):
-
-        # If 'question' is not in session_state, initialize it
-        if 'question' not in st.session_state:
-            st.session_state.question = ""
+    with st.form(key='qa_form', clear_on_submit=True):
 
         # Use st.session_state.question for the text_input
-        st.session_state.question = st.text_input('Enter your question:', value=st.session_state.question)
+        question_input = st.text_input('Enter your question:', value=st.session_state.get('question', ""))
 
         # Submit button for the form
         if st.form_submit_button("Get Answer"):
-            st.session_state.conversation.append({"role": "user", "content": st.session_state.question})
+
+            st.session_state.conversation.append({"role": "user", "content": question_input})
 
             with st.spinner('Finding answer...'):
                 data = {
-                    "question": st.session_state.question,
+                    "question": question_input,
                     "context": st.session_state.pdf_text
                 }
                 response = requests.post(f"{FASTAPI_ENDPOINT}/get-answer/", data=data)
-                answer_data = response.json()
+                answer_data = response.text
 
                 if "answer" in answer_data:
                     answer = answer_data['answer']
                     st.session_state.conversation.append({"role": "ai", "content": answer})
 
+            # Update st.session_state.question AFTER processing the current question
+            st.session_state.question = question_input
+
+            # Clear the question to reset the text box
+            st.session_state.question = ""
+
             # Refresh the page to reflect the changes
-                st.experimental_rerun()
+            st.experimental_rerun()
+
 
 
 
