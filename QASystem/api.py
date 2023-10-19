@@ -67,6 +67,8 @@ def perform_pypdf_ocr(pdf_file):
 
 def perform_nougat_ocr(pdf_file, nougat_url):
     
+    ngrok = "nougat_url/predict/"
+
     # Ensure the file object is in the correct format for requests (bytes).
     if not isinstance(pdf_file, bytes):
         pdf_file = pdf_file.read()
@@ -77,7 +79,7 @@ def perform_nougat_ocr(pdf_file, nougat_url):
     
     try:
         # Send the request to the Nougat OCR API
-        response = requests.post(f"{nougat_url}/predict/", files=files)
+        response = requests.post(ngrok, files=files)
     except requests.RequestException as e:
         print(f"Request failed: {e}")
         return None, {"error": str(e), "duration": 0, "num_pages": 0}
