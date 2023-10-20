@@ -57,9 +57,20 @@ Project Flow
 
 - The user is then able to enter any questions they have about the content of the article.
 
-Code Exlplaination:
+About the Code:
 -----------------
 
 Additional Notes:
 ---------------
 WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK.
+
+Soham Deshpande: 33%
+OpenAI Config., Streamlit UI Design, Heroku Implementation
+
+Tanmay Zope: 33%
+Notebooks Replication, Architecture Diagram, Open AI Config.
+
+Anvi Jain: 33%
+Notebooks Replication, Readme File, Technical Documentation
+
+
