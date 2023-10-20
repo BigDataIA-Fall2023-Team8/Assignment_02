@@ -181,8 +181,54 @@ def document_summary_section():
         st.write("Summary of the last document processed will appear here.")
 
 def about_section():
-    st.header("About PDF Analyzer")
-    st.write("This application allows users to extract text from PDF files and ask questions related to the extracted text.")
+    st.header("📘 About PDF Analyzer and Its Components 📘")
+
+    # Divider
+    st.markdown("---")
+
+    # PDF Analyzer
+    st.markdown("### 📄 **PDF Analyzer**", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background-color: #f0f0f0; padding: 10px 15px; border-radius: 5px;">
+    PDF Analyzer is a comprehensive tool that integrates state-of-the-art OCR (Optical Character Recognition) with an AI-driven Q/A system. It enables users to extract text from PDFs and then ask specific questions related to the extracted content, providing an interactive way to engage with document contents.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")  # Spacer
+
+    # Nougat
+    st.markdown("### 🍫 **Nougat**", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px;">
+    Nougat is an advanced OCR system tailored for extracting text from various document formats with high accuracy. It is designed to handle complex document layouts, multiple languages, and can distinguish between various text styles and structures. By leveraging machine learning and computer vision techniques, Nougat ensures precise text extraction even from intricate documents. <br><br>
+    <a href="https://github.com/facebookresearch/nougat" target="_blank">Learn more about Nougat on GitHub</a>.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")  # Spacer
+
+    # PyPDF
+    st.markdown("### 📖 **PyPDF**", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background-color: #f0f0f0; padding: 10px 15px; border-radius: 5px;">
+    PyPDF is a widely-used library in the Python ecosystem for handling PDF files. It allows for tasks such as extracting text, splitting and merging PDFs, and managing metadata. While its text extraction capabilities are solid for basic PDFs, it may not handle complex layouts or images as efficiently as specialized OCR systems like Nougat.
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.write("")  # Spacer
+
+    # OpenAI
+    st.markdown("### 🧠 **OpenAI**", unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background-color: #e8e8e8; padding: 10px 15px; border-radius: 5px;">
+    OpenAI is a leading organization in the realm of artificial intelligence research and its application. Known for its cutting-edge models and platforms, OpenAI aims to ensure that artificial general intelligence (AGI) benefits all of humanity. The Q/A system incorporated in the PDF Analyzer leverages OpenAI's language models to provide accurate and contextually relevant answers based on the extracted text from PDFs.
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Divider
+    st.markdown("---")
+
+    st.markdown("Together, these components make the **PDF Analyzer** a powerful tool for extracting and understanding the content within PDFs.", unsafe_allow_html=True)
 
 # Mapping sections to functions
 sections = {
