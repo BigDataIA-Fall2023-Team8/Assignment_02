@@ -22,8 +22,30 @@ if st.sidebar.button("Reset Session"):
     st.experimental_rerun()
 
 def home_section():
-    st.header("Welcome to the PDF Analyzer App")
-    st.write("Use this tool to extract text from PDFs and get answers from the extracted text. Navigate through the sidebar to access different functionalities.")
+    st.header("Welcome to the PDF Analyzer App 📄🔍")
+    st.write("This application allows you to harness the power of OCR (Optical Character Recognition) and an AI-powered Q/A system.")
+
+    # Using markdown for fancy formatting
+    st.markdown("""
+    #### How to Navigate:
+    1. **Perform OCR**:
+        - Provide a PDF via URL or direct upload.
+        - Choose an OCR method.
+        - See the extracted text and use it for subsequent operations.
+    2. **Q/A System**:
+        - After extracting text, ask any question regarding the content.
+        - See the AI's response in real-time.
+        - View your past questions and their answers.
+    3. **Document Summary**:
+        - Check out metrics related to your last OCR operation.
+    4. **About**:
+        - Learn more about the functionality and purpose of this app.
+    
+    Use the **sidebar** on the left to navigate between these sections. If you need to start over, simply hit the **Reset Session** button in the sidebar.
+    """, unsafe_allow_html=True)
+
+    st.write("🚀 Dive in and explore!")
+
 
 def perform_ocr_section():
     st.header("Perform OCR")
