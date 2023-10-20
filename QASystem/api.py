@@ -7,6 +7,7 @@ import openai
 from fastapi.middleware.cors import CORSMiddleware
 import logging
 import uvicorn
+import os  # Import the os module
 
 app = FastAPI()
 
@@ -24,7 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = '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'  # Replace with your OpenAI API key.
+# Access the OpenAI API key from environment variables
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+if not OPENAI_API_KEY:
+    raise ValueError("No OpenAI API key set in the environment variables.")
+openai.api_key = OPENAI_API_KEY
     
 #Using the chat model endpoint for GPT-3.5-turbo
 def get_answer_from_model(question, context, model_name="gpt-3.5-turbo"):
