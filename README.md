@@ -17,7 +17,7 @@ Within your IDE, access the integrated terminal.
 Link to the app:
 -----------------
 
-* Add the link
+#### [OCRSystem](https://ocrsystem.streamlit.app/)
 
 Project Flow
 -----------------
