@@ -3,8 +3,19 @@
 OCR and QA System Streamlit App
 ---------------
 Steps on how to run the demo:
-* Once the github repo has been cloned, we need to go to the following file Assignment_02 >QASystem > StreamlitGUI.py using any IDE (preferably VSCODE)
-* Open the integrated terminal for the same
+
+## Setup Instructions
+
+Follow the steps below to get the project up and running:
+
+### 1. Clone the Repository
+Clone this GitHub repository to your local machine.
+
+### 2. Navigate to the File
+Open `Assignment_02 > QASystem > StreamlitGUI.py` in your preferred IDE. We recommend [Visual Studio Code (VSCode)](https://code.visualstudio.com/).
+
+### 3. Open the Integrated Terminal
+Within your IDE, access the integrated terminal.
 * Create the required virtual environment by writing > python -m venv .appenv
 * Activate the Virtual Environment > source .appenv/bin/activate
 * Then import the required modules from requirements.txt > pip install -r requirements.txt
