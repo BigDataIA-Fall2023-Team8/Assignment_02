@@ -24,15 +24,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-openai.api_key = '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'  # Replace with your OpenAI API key.
-
-def get_answer_from_model(prompt, model_name="text-davinci-002"):
-    response = openai.Completion.create(
-        engine=model_name,
-        prompt=prompt,
-        max_tokens=150
+openai.api_key = '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'  # Replace with your OpenAI API key.
+    
+#Using the chat model endpoint for GPT-3.5-turbo
+def get_answer_from_model(question, context, model_name="gpt-3.5-turbo"):
+    message = [
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": f"Given the following document: {context}"},
+        {"role": "user", "content": question}
+    ]
+    response = openai.ChatCompletion.create(
+        model=model_name,
+        messages=message
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message['content']
 
 def perform_pypdf_ocr(pdf_file):
     start_time = time.time()
@@ -58,13 +63,11 @@ def perform_pypdf_ocr(pdf_file):
         'processed_page_count': initial_page_count  # assuming all pages are processed
     }
 
-    #summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
-    #extracted_text += summary_str
-
     return extracted_text
 
-def perform_nougat_ocr(pdf_file):
-    nougat_url = "https://7ee3-35-204-119-38.ngrok-free.app/predict"  # Update as per your configuration
+def perform_nougat_ocr(pdf_file, ngrok):
+    
+    nougat_url = f"{ngrok}/predict/"
 
     # Ensure the file object is in the correct format for requests (bytes).
     if not isinstance(pdf_file, bytes):
@@ -80,7 +83,7 @@ def perform_nougat_ocr(pdf_file):
     except requests.RequestException as e:
         print(f"Request failed: {e}")
         return None, {"error": str(e), "duration": 0, "num_pages": 0}
-    
+
     end_time = time.time()  # End timing
     duration = end_time - start_time  # Calculate duration
     
@@ -97,18 +100,13 @@ def perform_nougat_ocr(pdf_file):
             "Characters sent": len(pdf_file),
             "Chars Received": len(ocr_text),
         }
-
-        #summary_str = "\n\n" + "\n".join([f"{key}: {value}" for key, value in summary.items()])
-        #ocr_text += summary_str
-
-        return ocr_text  # Return the OCR text and the summary
-        #return {"ocr_text": ocr_text, "summary": summary}
+        return ocr_text  # Return the OCR text
     else:
         print(f"Failed to perform OCR. Status code: {response.status_code}, Response: {response.text}")
         return None, {"error": response.text, "duration": duration, "num_pages": 0}
 
 @app.post("/perform-ocr/")
-async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...), file: UploadFile = File(None)):
+async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...), file: UploadFile = File(None), ngrok: str = Form(None)):
     try:
         logging.info(f"Received OCR request: url={url}, ocr_method={ocr_method}, file={file}")
 
@@ -127,11 +125,15 @@ async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...),
 
         # Perform OCR
         if ocr_method == "PyPDF":
-            pdf_text = perform_pypdf_ocr(pdf_content)
+                pdf_text = perform_pypdf_ocr(pdf_content)
         elif ocr_method == "Nougat":
-            pdf_text = perform_nougat_ocr(io.BytesIO(pdf_content))
+            if ngrok != "":
+                pdf_text = perform_nougat_ocr(io.BytesIO(pdf_content), ngrok)
+            else:
+                return {"status": "error", "message": "NGrok URL is required for Nougat OCR"}
         else:
             return {"status": "error", "message": "Invalid OCR method"}
+
 
         # Compute elapsed time and log
         elapsed_time = time.time() - start_time
@@ -154,18 +156,16 @@ async def handle_ocr_request(url: str = Form(None), ocr_method: str = Form(...),
 
 @app.post("/get-answer/")
 def handle_question(question: str = Form(...), context: str = Form(...)):
-    prompt = f"Given the following document: {context} {question}"
-    answer = get_answer_from_model(prompt)
+    answer = get_answer_from_model(question, context)
     return {"answer": answer}
 
 @app.get("/")
 def read_root():
     return {"Hello": "FastAPI"}
 
-
+#For Local Hosting
 # def main():
 #     import uvicorn
-
 #     uvicorn.run("api:app", port=8504)
 
 # if __name__ == "__main__":
