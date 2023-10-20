@@ -1,9 +1,5 @@
 # Assignment_02
 
-OCR and QA System Streamlit App
----------------
-Steps on how to run the demo:
-
 ## Setup Instructions
 
 Follow the steps below to get the project up and running:
@@ -16,11 +12,7 @@ Open `Assignment_02 > QASystem > StreamlitGUI.py` in your preferred IDE. We reco
 
 ### 3. Open the Integrated Terminal
 Within your IDE, access the integrated terminal.
-* Create the required virtual environment by writing > python -m venv .appenv
-* Activate the Virtual Environment > source .appenv/bin/activate
-* Then import the required modules from requirements.txt > pip install -r requirements.txt
-* This will set up the initial requirements
-
+* Open the integrated terminal for the folder and run the comman > streamlit run StreamlitGUI.py
 
 Link to the app:
 -----------------
@@ -29,7 +21,6 @@ Link to the app:
 
 Project Flow
 -----------------
-
 
 #### User Interface
 
