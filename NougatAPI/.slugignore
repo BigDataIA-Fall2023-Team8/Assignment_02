@@ -1,0 +1,8 @@
+# Heres a comment
+*.psd
+*.pdf
+/test
+/spec
+tests/
+docs/
+large_dataset.csv
