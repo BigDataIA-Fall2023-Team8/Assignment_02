@@ -9,11 +9,17 @@ Steps on how to run the demo:
 * Activate the Virtual Environment > source .appenv/bin/activate
 * Then import the required modules from requirements.txt > pip install -r requirements.txt
 * This will set up the initial requirements
+
+
 Link to the app:
 -----------------
+
 * Add the link
+
 Project Flow
 -----------------
+
+
 ### User Interface
 
 - The user interacts with a Streamlit web application.
@@ -49,6 +55,8 @@ Project Flow
 
 - The user is then able to enter any questions they have about the content of the article.
 
+Code Exlplaination:
+-----------------
 
 Additional Notes:
 ---------------
