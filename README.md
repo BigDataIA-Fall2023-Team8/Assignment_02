@@ -14,10 +14,14 @@ Open `Assignment_02 > QASystem > StreamlitGUI.py` in your preferred IDE. We reco
 Within your IDE, access the integrated terminal.
 * Open the integrated terminal for the folder and run the comman > streamlit run StreamlitGUI.py
 
-Link to the app:
+## Link to the app:
 -----------------
 
 #### [OCRSystem](https://ocrsystem.streamlit.app/)
+
+## Link to the Replication of Notebooks
+-----------------
+#### [Replicating the 3 Notebooks](https://colab.research.google.com/drive/1qDuPLMXII3JL0Dr5mn0AO3IApohYkv1I?usp=sharing)
 
 ## Project Flow
 -----------------
