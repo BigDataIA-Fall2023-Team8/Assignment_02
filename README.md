@@ -120,6 +120,9 @@ read_root Endpoint: A simple root endpoint that returns a "Hello" message when a
 
 ## Additional Notes:
 ---------------
+
+Link to the presentation video - https://www.youtube.com/watch?v=lUvummlyb1c
+
 WE ATTEST THAT WE HAVEN’T USED ANY OTHER STUDENTS’ WORK IN OUR ASSIGNMENT AND ABIDE BY THE POLICIES LISTED IN THE STUDENT HANDBOOK.
 
 | Name            | Percentage | Responsibilities                                 |
